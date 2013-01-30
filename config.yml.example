@@ -1,0 +1,29 @@
+card:
+  CardNumber: "XXXXXXXXXXXX"
+  ExpirationMonth: "XX"
+  ExpirationYear: "XX"
+  CVVCode: "XXX"
+shipping:
+  City: London
+  CountryCode: AU
+  CountryName: AUSTRALIA
+  FirstName: Joe
+  LastName: Bloggs
+  PhoneNumber: "123456789"
+  PostalCode: "4000"
+  State: "QLD"
+  Street1: "Some Street"
+  Street2: "Some Suburb"
+  Email: test@example.com 
+billing:
+  City: London
+  CountryCode: AU
+  CountryName: AUSTRALIA
+  FirstName: Joe
+  LastName: Bloggs
+  PhoneNumber: "123456789"
+  PostalCode: "4000"
+  State: "QLD"
+  Street1: "Some Street"
+  Street2: "Some Suburb"
+  Email: test@example.com
