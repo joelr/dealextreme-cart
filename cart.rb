@@ -9,8 +9,15 @@ class Cart
   def initialize
   end
 
-  def add_product id
-    agent.get("http://cart.dx.com/shoppingcart.dx/add.#{id}")
+  def add_product id_or_product
+    product = id_or_product.is_a?(Product) ? id_or_product : Product.find(id_or_product)
+    if product.in_stock?
+      puts "Adding #{product.title}"
+      puts "Price #{product.price}"
+      agent.get("http://cart.dx.com/shoppingcart.dx/add.#{product.id}")
+    else
+      puts "Error adding #{product.title}, out of stock"
+    end
   end
 
   def total
@@ -42,43 +49,39 @@ class Cart
   end
 
   def address
-
     agent.get("https://cart.dx.com/CC/ShippingInfo")
     cartid = agent.page.parser.css('#cartId')[0]['value']
+    agent.post('https://cart.dx.com/Account/AnonymousRegister', {"email" => config["billing"]["email"]})
+    resp = agent.post('https://cart.dx.com/CC/CalShippingFee', shipping_config.merge({"cartId" => cartid }))
 
-    agent.post('https://cart.dx.com/Account/AnonymousRegister', {
-      "email" => config["billing"]["email"]
-      })
-      resp = agent.post('https://cart.dx.com/CC/CalShippingFee', shipping_config.merge({"cartId" => cartid }))
+    results =  JSON.parse(resp.body)
+    puts "Final total #{results["grandTotal"]}"
+    # {"success":true,"currencyCode":"USD","currencySymbol":"$","subTotal":2.1,"shippingFee":0,"discountTotal":0,"handlingFee":0,"packingFee":0,"grandTotal":2.1}
 
-      results =  JSON.parse(resp.body)
-      puts "Final total #{results["grandTotal"]}"
-      # {"success":true,"currencyCode":"USD","currencySymbol":"$","subTotal":2.1,"shippingFee":0,"discountTotal":0,"handlingFee":0,"packingFee":0,"grandTotal":2.1}
-
-      agent.post('https://cart.dx.com/CC/ShippingInfo', shipping_config)
-      agent.get("https://cart.dx.com/CC/BillingInfo")
-    end
-
-    def pay
-      self.checkout
-      self.address
-      self.purchase
-      self.confirm
-    end
-
-    def config 
-      @config ||= YAML.load(File.read("config.yml"))
-    end
-
-    def billing_config
-      config["billing"].merge(config["card"])
-    end
-
-    def shipping_config
-      config["shipping"].merge({"shippingMethod" => "0"})
-    end
-
-    def agent
-      @agent ||= agent = Mechanize.new
-    end
+    agent.post('https://cart.dx.com/CC/ShippingInfo', shipping_config)
+    agent.get("https://cart.dx.com/CC/BillingInfo")
   end
+
+  def pay
+    self.checkout
+    self.address
+    self.purchase
+    self.confirm
+  end
+
+  def config 
+    @config ||= YAML.load(File.read("config.yml"))
+  end
+
+  def billing_config
+    config["billing"].merge(config["card"])
+  end
+
+  def shipping_config
+    config["shipping"].merge({"shippingMethod" => "0"})
+  end
+
+  def agent
+    @agent ||= agent = Mechanize.new
+  end
+end
