@@ -51,9 +51,8 @@ class Cart
   def address
     agent.get("https://cart.dx.com/CC/ShippingInfo")
     cartid = agent.page.parser.css('#cartId')[0]['value']
-    agent.post('https://cart.dx.com/Account/AnonymousRegister', {"email" => config["billing"]["email"]})
+    resp = agent.post('https://cart.dx.com/Account/AnonymousRegister', {"email" => config["billing"]["Email"]})
     resp = agent.post('https://cart.dx.com/CC/CalShippingFee', shipping_config.merge({"cartId" => cartid }))
-
     results =  JSON.parse(resp.body)
     puts "Final total #{results["grandTotal"]}"
     # {"success":true,"currencyCode":"USD","currencySymbol":"$","subTotal":2.1,"shippingFee":0,"discountTotal":0,"handlingFee":0,"packingFee":0,"grandTotal":2.1}
